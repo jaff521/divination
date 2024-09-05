@@ -31,10 +31,10 @@ function Question(props: { question: string; setQuestion: any }) {
     >
       {props.question === "" ? (
         <>
-          <label>您想算点什么？</label>
+          <label>何事困惑？卜卦为您指点迷津</label>
           <Textarea
             ref={inputRef}
-            placeholder="将使用 AI 为您解读"
+            placeholder="请输入您的将使用AI大师为您解读"
             className="resize-none"
             rows={4}
           />
@@ -45,7 +45,7 @@ function Question(props: { question: string; setQuestion: any }) {
           </div>
 
           <label className="mt-16 underline underline-offset-4">
-            🧐 让我猜猜您算什么东西？
+            今日卜卦，为您解答未来之迷
           </label>
           <div className="flex flex-wrap gap-3">
             {todayData.map(function (value, index) {

@@ -115,6 +115,11 @@ function Divination() {
     onCompletion();
   }
 
+  function dashangClick() {
+    //跳转到打赏页面
+    
+  }
+
   function setResult(list: HexagramObj[]) {
     if (list.length != 6) {
       return;
@@ -206,12 +211,17 @@ function Divination() {
               disabled={rotation}
             >
               <ListRestart size={18} className="mr-1" />
-              重来
+              再来一次
             </Button>
-            {resultAi ? null : (
+            {resultAi ? (
+              <Button size="sm" onClick={dashangClick} disabled={rotation}>
+                <BrainCircuit size={16} className="mr-1" />
+                打赏
+              </Button>
+            ) : (
               <Button size="sm" onClick={aiClick} disabled={rotation}>
                 <BrainCircuit size={16} className="mr-1" />
-                AI 解读
+                AI大师解读
               </Button>
             )}
           </div>

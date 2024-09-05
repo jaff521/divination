@@ -69,7 +69,7 @@ function ResultAI({
       >
         {error ? (
           <div className="text-destructive">
-            ಠ_ಠ 请求出错了！
+            请求出错了！
             <br />
             {error}
           </div>
@@ -79,7 +79,7 @@ function ResultAI({
         {!isLoading && (
           <Button onClick={onCompletion} size="sm" className="mt-2">
             <RotateCw size={18} className="mr-1" />
-            重新生成
+            换个思路
           </Button>
         )}
       </div>
