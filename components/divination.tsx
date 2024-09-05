@@ -13,6 +13,7 @@ import guaListData from "@/lib/data/gua-list.json";
 import { BrainCircuit, ListRestart } from "lucide-react";
 import { getAnswer } from "@/app/server";
 import { readStreamableValue } from "ai/rsc";
+import Appreciate from "@/components/ui/appreciate";
 
 function Divination() {
   const [error, setError] = useState<string>("");
@@ -57,6 +58,7 @@ function Divination() {
   const [question, setQuestion] = useState("");
 
   const [resultAi, setResultAi] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const flexRef = useRef<HTMLDivElement>(null);
 
@@ -67,7 +69,15 @@ function Divination() {
     const observer = animateChildren(flexRef.current);
     return () => observer.disconnect();
   }, []);
+  const handleConfirm = () => {
+    setShowWelcome(!showWelcome)
+    // 这里可以添加更多的逻辑
+  };
 
+  const handleCancel = () => {
+    setShowWelcome(!showWelcome)
+    // 这里可以添加更多的逻辑
+  };
   function onTransitionEnd() {
     setRotation(false);
     let frontCount = frontList.reduce((acc, val) => (val ? acc + 1 : acc), 0);
@@ -114,10 +124,8 @@ function Divination() {
     setResultAi(true);
     onCompletion();
   }
-
-  function dashangClick() {
-    //跳转到打赏页面
-    
+  function appreciate(){
+    setShowWelcome(!showWelcome);
   }
 
   function setResult(list: HexagramObj[]) {
@@ -213,15 +221,16 @@ function Divination() {
               <ListRestart size={18} className="mr-1" />
               再来一次
             </Button>
-            {resultAi ? (
-              <Button size="sm" onClick={dashangClick} disabled={rotation}>
-                <BrainCircuit size={16} className="mr-1" />
-                打赏
-              </Button>
-            ) : (
+            {resultAi ? null : (
               <Button size="sm" onClick={aiClick} disabled={rotation}>
                 <BrainCircuit size={16} className="mr-1" />
                 AI大师解读
+              </Button>
+            )}
+            {resultAi ? null : (
+              <Button size="sm" onClick={appreciate} disabled={rotation}>
+                <BrainCircuit size={16} className="mr-1" />
+                打赏
               </Button>
             )}
           </div>
@@ -236,6 +245,11 @@ function Divination() {
           error={error}
         />
       )}
+      <div>
+        {showWelcome && (
+          <Appreciate onConfirm={handleConfirm} onCancel={handleCancel} />
+        )}
+      </div>
     </main>
   );
 }
