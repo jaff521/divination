@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Coin from "@/components/coin";
 import Hexagram, { HexagramObj } from "@/components/hexagram";
 import { bool } from "aimless.js";
@@ -21,15 +21,19 @@ function Divination() {
   const [completion, setCompletion] = useState<string>("");
 
   async function onCompletion() {
+    if (!resultObj) {
+      setError("结果不存在，请先完成卜卦");
+      return;
+    }
     setError("");
     setCompletion("");
     setIsLoading(true);
     try {
       const { data, error } = await getAnswer(
         question,
-        resultObj!.guaMark,
-        resultObj!.guaResult,
-        resultObj!.guaChange,
+        resultObj.guaMark,
+        resultObj.guaResult,
+        resultObj.guaChange,
       );
       if (error) {
         setError(error);
@@ -38,8 +42,25 @@ function Divination() {
       if (data) {
         let ret = "";
         for await (const delta of readStreamableValue(data)) {
-          ret += delta;
-          setCompletion(ret);
+          if (!delta) continue;
+          
+          // 清理文本：移除 token 字符串和无效内容
+          let cleaned = delta
+            .replace(/\btoken\b/gi, "") // 移除独立的 token 单词
+            .replace(/token+/gi, "") // 移除连续的 token
+            .replace(/\s+/g, " ") // 合并多个空格
+            .trim();
+          
+          // 如果清理后还有内容，才添加到结果中
+          if (cleaned) {
+            ret += cleaned;
+            // 最终清理：移除重复的段落和多余的空行
+            const finalText = ret
+              .replace(/\n{3,}/g, "\n\n") // 最多保留两个换行
+              .replace(/([。！？])\s*\1+/g, "$1") // 移除重复的标点
+              .trim();
+            setCompletion(finalText);
+          }
         }
       }
     } catch (err: any) {
@@ -70,22 +91,22 @@ function Divination() {
     return () => observer.disconnect();
   }, []);
   const handleConfirm = () => {
-    setShowWelcome(!showWelcome)
+    setShowWelcome(false);
     // 这里可以添加更多的逻辑
   };
 
   const handleCancel = () => {
-    setShowWelcome(!showWelcome)
+    setShowWelcome(false);
     // 这里可以添加更多的逻辑
   };
-  function onTransitionEnd() {
+  const onTransitionEnd = useCallback((usedFrontList: boolean[]) => {
     setRotation(false);
-    let frontCount = frontList.reduce((acc, val) => (val ? acc + 1 : acc), 0);
     setHexagramList((list) => {
+      let frontCount = usedFrontList.reduce((acc, val) => (val ? acc + 1 : acc), 0);
       const newList = [
         ...list,
         {
-          change: frontCount == 0 || frontCount == 3 || null,
+          change: frontCount === 0 || frontCount === 3 ? true : null,
           yang: frontCount >= 2,
           separate: list.length == 3,
         },
@@ -93,7 +114,7 @@ function Divination() {
       setResult(newList);
       return newList;
     });
-  }
+  }, []);
 
   function startClick() {
     if (rotation) {
@@ -106,18 +127,15 @@ function Divination() {
     setRotation(true);
   }
 
-  async function testClick() {
-    for (let i = 0; i < 6; i++) {
-      onTransitionEnd();
-    }
-  }
 
   function restartClick() {
     setResultObj(null);
     setHexagramList([]);
     setQuestion("");
     setResultAi(false);
-    stop();
+    setShowWelcome(false);
+    setCompletion("");
+    setError("");
   }
 
   function aiClick() {
@@ -138,7 +156,7 @@ function Divination() {
     const changeYang = ["初九", "九二", "九三", "九四", "九五", "上九"];
     const changeYin = ["初六", "六二", "六三", "六四", "六五", "上六"];
 
-    const changeList: String[] = [];
+    const changeList: string[] = [];
     list.forEach((value, index) => {
       if (!value.change) {
         return;

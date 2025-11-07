@@ -17,12 +17,15 @@ function Coin(props: {
       return;
     }
 
+    // Capture the frontList when rotation starts
+    const rotationStartFrontList = props.frontList;
+    setLastFront(rotationStartFrontList);
+    
     let id = setTimeout(function () {
-      setLastFront(props.frontList);
-      props.onTransitionEnd();
+      props.onTransitionEnd(rotationStartFrontList);
     }, rotationDuration);
     return () => clearTimeout(id);
-  });
+  }, [props.rotation, props.frontList, props.onTransitionEnd]);
 
   return (
     <div className="flex w-full max-w-md justify-around rounded-md border bg-secondary p-4 shadow dark:border-0 dark:shadow-none sm:p-6">
@@ -69,7 +72,7 @@ function CoinItem(props: {
         sizes="100vw"
         draggable={false}
         className="absolute w-full"
-        src="/img/head.webp"
+        src="/img/front.png"
         alt="coin"
       />
       <Image
@@ -79,7 +82,7 @@ function CoinItem(props: {
         draggable={false}
         className="absolute h-full w-full"
         style={{ transform: "translateZ(-1px)" }}
-        src="/img/tail.webp"
+        src="/img/back.png"
         alt="coin"
       />
     </div>
