@@ -88,10 +88,10 @@ export async function getAnswer(
   try {
     // 获取卦象详细解释
     let guaDetail = "";
-    try {
-      const res = await fetch(
-        `https://raw.githubusercontent.com/sunls2/zhouyi/main/docs/${guaMark}/index.md`,
-      );
+  try {
+    const res = await fetch(
+      `https://raw.githubusercontent.com/sunls2/zhouyi/main/docs/${guaMark}/index.md`,
+    );
       if (res.ok) {
         guaDetail = await res.text();
       }
@@ -101,7 +101,7 @@ export async function getAnswer(
 
     // 构建消息内容
     const systemPrompt =
-      "你是精通易经64卦, 擅长解读卦象的AI助手\n1.首先对卦象整体情况进行解读\n2.再重点结合要算的事情和变爻情况进行详细分析\n3.回答要简洁、玄妙，不要出现与问题无关的描述，字数控制在 200 字以内。";
+      "你是精通易经64卦, 擅长解读卦象的AI助手\n1.首先对卦象整体情况进行解读\n2.再重点结合要算的事情和变爻情况进行详细分析\n3.回答要简洁、玄妙，不要出现与问题无关的描述，字数控制在 500 字以内。";
     
     let message = `${systemPrompt}。我想要算的事情是：${prompt}, 请帮我解读此卦象：${guaName}`;
     if (guaChange && guaChange !== "无变爻") {
@@ -176,11 +176,22 @@ export async function getAnswer(
 
               try {
                 const json = JSON.parse(dataStr);
-                const text = extractText(json);
-                if (text && !text.includes("[object Object]") && text.toLowerCase() !== "token") {
-                  const cleaned = cleanText(text);
-                  if (cleaned) {
-                    stream.update(cleaned);
+                
+                // 只处理 token 类型的数据，忽略 message 类型
+                if (json && typeof json === "object") {
+                  if (json.type === "message") {
+                    // 跳过 message 类型（完整答案），只处理 token 类型（流式增量）
+                    continue;
+                  }
+                  // 处理 token 类型或没有 type 字段的数据
+                  if (json.type === "token" || json.type === undefined || json.type === null) {
+                    const text = extractText(json);
+                    if (text && !text.includes("[object Object]") && text.toLowerCase() !== "token") {
+                      const cleaned = cleanText(text);
+                      if (cleaned) {
+                        stream.update(cleaned);
+                      }
+                    }
                   }
                 }
               } catch (e) {
@@ -208,11 +219,22 @@ export async function getAnswer(
                 // 尝试解析为 JSON，如果失败则作为纯文本处理
                 try {
                   const json = JSON.parse(trimmedLine);
-                  const text = extractText(json);
-                  if (text && !text.includes("[object Object]") && text.toLowerCase() !== "token") {
-                    const cleaned = cleanText(text);
-                    if (cleaned) {
-                      stream.update(cleaned);
+                  
+                  // 只处理 token 类型的数据，忽略 message 类型
+                  if (json && typeof json === "object") {
+                    if (json.type === "message") {
+                      // 跳过 message 类型（完整答案），只处理 token 类型（流式增量）
+                      continue;
+                    }
+                    // 处理 token 类型或没有 type 字段的数据
+                    if (json.type === "token" || json.type === undefined || json.type === null) {
+                      const text = extractText(json);
+                      if (text && !text.includes("[object Object]") && text.toLowerCase() !== "token") {
+                        const cleaned = cleanText(text);
+                        if (cleaned) {
+                          stream.update(cleaned);
+                        }
+                      }
                     }
                   }
                 } catch (e) {
