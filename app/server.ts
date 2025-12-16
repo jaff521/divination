@@ -5,6 +5,7 @@ const FORTUNE_TELLING_API_URL =
   process.env.FORTUNE_TELLING_API_URL ??
   "http://120.224.107.249:22388/research-assistant/stream";
 
+  const FORTUNE_TELLING_API_KEY = process.env.FORTUNE_TELLING_API_KEY ?? "";
 // 生成唯一的 thread_id 和 user_id
 function generateId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -119,6 +120,7 @@ export async function getAnswer(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+                "Authorization": `Bearer ${FORTUNE_TELLING_API_KEY}`,
       },
       body: JSON.stringify({
         message: message,
